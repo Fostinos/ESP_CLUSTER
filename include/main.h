@@ -68,8 +68,8 @@
  * Sync Types
  * @COMMAND_TYPES
 */
-#define 		SYNC_ACK				0xF5U				// Command Type for configuring Sleep Mode Time
-#define 		SYNC_NACK			 	0xA5U				// Command Type for configuring Activity Mode Time
+#define 		SYNC_ACK				0xF5U				// Synchronization
+#define 		SYNC_NACK			 	0xA5U				// DeSynchronization
 
 /*
  * ESP Data Structure 
@@ -100,93 +100,94 @@ typedef struct
  * ESP MAC Addresses Table 
 */
 // A4:CF:12:D9:93:AB
-const uint8_t broadcastAddresses[ESP_TOTAL][ESP_ADDR] = { {0x10, 0x52, 0x1C, 0x67, 0x71, 0xA0},	// ESP ID 0 Address (Main ESP)
-                                                          {0x2C, 0xF4, 0x32, 0x19, 0x86, 0xF5},	// ESP ID 1 Address
-                                                          {0x50, 0x02, 0x91, 0x68, 0x34, 0x57},	// ESP ID 2 Address
-                                                          {0xA4, 0xCF, 0x12, 0xD9, 0x93, 0xAB},	// ESP ID 3 Address
-                                                        };
+const uint8_t broadcastAddresses[ESP_TOTAL][ESP_ADDR] = {   
+	{0x10, 0x52, 0x1C, 0x67, 0x71, 0xA0},				// ESP ID 0 Address (Main ESP)
+	{0x2C, 0xF4, 0x32, 0x19, 0x86, 0xF5},				// ESP ID 1 Address
+	{0x50, 0x02, 0x91, 0x68, 0x34, 0x57},				// ESP ID 2 Address
+	{0xA4, 0xCF, 0x12, 0xD9, 0x93, 0xAB},				// ESP ID 3 Address
+	};
 
 
 // CALLBACK PROTOTYPES IMPLEMENTED IN MAIN.CPP
 
 /**
- * @fn            		- OnDataSent 
+ * @fn					- OnDataSent 
  * 
- * @brief			      	- Callback Function when data is sent
+ * @brief				- Callback Function when data is sent
  *
- * @param[in]		    	- Receiver MAC Address
+ * @param[in]			- Receiver MAC Address
  * 
- * @param[in]		    	- Sending Status
+ * @param[in]			- Sending Status
  *
- * @return			    	- none
+ * @return				- none
  * 
- * @note          		- Callback Function 
+ * @note				- Callback Function 
  */
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus);
 
 
 /**
- * @fn            		- OnDataRecv 
+ * @fn					- OnDataRecv 
  * 
- * @brief			      	- Callback Function when data is received
+ * @brief				- Callback Function when data is received
  *
- * @param[in]		    	- Sender MAC Address
+ * @param[in]			- Sender MAC Address
  * 
- * @param[in]		    	- Pointer to Incoming Data
+ * @param[in]			- Pointer to Incoming Data
  * 
- * @param[in]		    	- Incoming Data Length
+ * @param[in]			- Incoming Data Length
  *
- * @return			    	- none
+ * @return				- none
  * 
- * @note          		- Callback Function 
+ * @note				- Callback Function 
  */
 void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len);
 
 /**
- * @fn            		- beginDataSending 
+ * @fn					- beginDataSending 
  * 
- * @brief			  	    - This function sends the first ESP_Data
+ * @brief				- This function sends the first ESP_Data
  *
- * @param[in]		    	- ESP Board ID (corresponding to Last Board ID)
+ * @param[in] 			- ESP Board ID (corresponding to Last Board ID)	
  *
- * @return			    	- none
+ * @return				- none
  * 
- * @note          		- none
+ * @note				- none
  */
 void beginDataSending(uint8_t board_ID);
 
 /**
- * @fn             		- printAllESPData 
+ * @fn					- printAllESPData 
  * 
- * @brief			      	- This function prints all ESP_Data of RTC Memory
+ * @brief				- This function prints all ESP_Data of RTC Memory
  *
- * @return			    	- none
+ * @return				- none
  * 
- * @note          		- none
+ * @note				- none
  */
 void printAllESPData(void);
 
 /**
- * @fn          	  	- printESPData 
+ * @fn					- printESPData 
  * 
- * @brief			      	- This function prints ESP_Data on Serial Monitor
+ * @brief				- This function prints ESP_Data on Serial Monitor
  *  
- * @param[in]		    	- ESP_Data to be printed
+ * @param[in]			- ESP_Data to be printed
  * 
- * @return			    	- none
+ * @return				- none
  * 
- * @note          		- none
+ * @note				- none
  */
 void printESPData(ESP_Data data);
 
 /**
- * @fn             		- getESPData 
+ * @fn					- getESPData 
  * 
- * @brief			      	- This function gets ESP_Data of the current ESP Board
+ * @brief				- This function gets ESP_Data of the current ESP Board
  * 
- * @return			    	- Currrent ESP_Data
+ * @return				- Currrent ESP_Data
  * 
- * @note          		- none
+ * @note				- none
  */
 ESP_Data getESPData(void);
 
