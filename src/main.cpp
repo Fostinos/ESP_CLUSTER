@@ -272,8 +272,6 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
 
 		// Calculate Offset of current ESP_Data in RTC Memory
-		uint8_t offset = BOARD_ID * sizeof(ESP_Data);
-
 		uint8_t allData[len + sizeof(ESP_Data)];
 
 		memcpy(&allData, &data, sizeof(ESP_Data));
