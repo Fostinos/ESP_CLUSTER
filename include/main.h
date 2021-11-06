@@ -45,7 +45,7 @@
  * Current ESP Board ID 
 */
 // TODO: To be changed to corresponding Board ID
-#define 		ESP_BOARD_ID			ESP_BOARD_2
+#define 		ESP_BOARD_ID			ESP_BOARD_3
 
 /*
  * Generic Macros

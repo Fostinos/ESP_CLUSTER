@@ -262,14 +262,22 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		// Get current ESP_Data from sensors
 		ESP_Data data;
 		data.board_ID = BOARD_ID;
-		uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
-		float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
-		data.battery = getBatteryPercentage(vcc);   // Get Percentage
+		// uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
+		// float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
+		// data.battery = getBatteryPercentage(vcc);   // Get Percentage
 		data.battery = getBatteryPercentage(VCC_VOLTAGE_MAX); // 100%
 		data.temperature = random(0, 101);		// [0; 100]     (unit : °C)
 		data.humidity = random(0, 101);			// [0%; 100%]     
 		data.pressure = random(1000, 1051);		// [1000; 1050] (unit : mbar)
 		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
+
+			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
+			Serial.println("ESP Battery     : " + String(data.battery) + " %");
+			Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
+			Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
+			Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
+			Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
+			Serial.println();
 
 		// Calculate Offset of current ESP_Data in RTC Memory
 		uint8_t allData[len + sizeof(ESP_Data)];
@@ -285,7 +293,8 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 			Serial.println("Succeed");
 
 			// Send All ESP_Data
-			esp_now_send(addressESP_DataReceiver, allData, sizeof(allData));
+			//esp_now_send(addressESP_DataReceiver, allData, sizeof(allData));
+			printAllESPData();
 		}else{
 			Serial.println("Failed");
 			// TODO
@@ -338,6 +347,15 @@ void beginDataSending(uint8_t board_ID)
 		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET + offset, (uint32_t*)&data, sizeof(data))){
 			Serial.println("Succeed");
 
+			// Display First ESP_Data
+			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
+			Serial.println("ESP Battery     : " + String(data.battery) + " %");
+			Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
+			Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
+			Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
+			Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
+			Serial.println();
+
 			// Send ESP_Data
 			esp_now_send(addressESP_DataReceiver, (uint8_t*)&data, sizeof(data));
 
@@ -371,7 +389,7 @@ void printAllESPData()
 	uint8_t allData[length];
 	Serial.println("\nLoading All ESP_Data");
 	Serial.print("Reading....... ");
-	if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&allData, length)){
+	if(ESP.rtcUserMemoryRead(RTC_DATA_OFFSET, (uint32_t*)&allData, length)){
 		Serial.println("Succeed");
 		
 		// Print All ESP_Data
@@ -381,11 +399,11 @@ void printAllESPData()
 		{
 			memcpy(&data, &allData[i * sizeof(ESP_Data)], sizeof(ESP_Data));
 			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
-			Serial.println("ESP Battery     : " + String(data.battery) + "%");
-			Serial.println("ESP Temperature : " + String(data.temperature) + "°C");
-			Serial.println("ESP Humidity    : " + String(data.humidity) + "%");
-			Serial.println("ESP Pressure    : " + String(data.pressure) + "mbar");
-			Serial.println("ESP Luminosity  : " + String(data.luminosity) + "lux");
+			Serial.println("ESP Battery     : " + String(data.battery) + " %");
+			Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
+			Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
+			Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
+			Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
 			Serial.println();
 		}
 	}else{
