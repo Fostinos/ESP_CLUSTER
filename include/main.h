@@ -45,7 +45,7 @@
  * Current ESP Board ID 
 */
 // TODO: To be changed to corresponding Board ID
-#define 		ESP_BOARD_ID			ESP_BOARD_2
+#define 		BOARD_ID				ESP_BOARD_2
 
 /*
  * Generic Macros
@@ -53,8 +53,8 @@
 #define 		ESP_TOTAL				4					// Total of ESP (4 Boards)
 #define 		ESP_ADDR				6					// ESP MAC Address size (6 Bytes)
 #define 		RESERVED				6					// Reserved Bytes for other sensors (6 Bytes)
-#define 		SLEEP_TIME				10					// Default Sleep Time (in Seconds)
-#define 		ACTIVITY_TIME			50					// Default Activity Time before going to Sleep Mode (in Seconds)
+#define 		SLEEP_TIME				30					// Default Sleep Time (in Seconds)
+#define 		ACTIVITY_TIME			5					// Default Activity Time before going to Sleep Mode (in Seconds)
 #define 		s_TO_uS_FACTOR 			1000000 			// Conversion Factor for Seconds to MicroSeconds
 
 /*
@@ -63,10 +63,6 @@
 */
 #define 		CMD_SLEEP				((uint8_t)0)		// Command Type for configuring Sleep Mode Time
 #define 		CMD_ACTIVITY			((uint8_t)1)		// Command Type for configuring Activity Mode Time
-
-
-#define 		SLEEP_TIME				30U					// Sleep Mode Default Time
-#define 		ACTIVITY_TIME			5U					// Activity Mode Default Time
 
 
 /*
@@ -176,7 +172,7 @@ void printAllESPData(void);
  * 
  * @brief				- This function prints ESP_Data on Serial Monitor
  *  
- * @param[in]			- ESP_Data to be printed
+ * @param[in] 			- ESP_Data to be printed
  * 
  * @return				- none
  * 

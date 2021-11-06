@@ -19,10 +19,6 @@
 #include "battery.h"
 #include "rtc.h"
 
-// Set your Board ID (ESP #1 = BOARD_ID_1, ESP #2 = BOARD_ID_2, etc)
-//TODO
-#define     BOARD_ID               ESP_BOARD_ID
-
 
 // Set ADC Mode 
 ADC_MODE(ADC_VCC);
@@ -448,6 +444,7 @@ ESP_Data getESPData(void)
 	data.humidity = random(0, 101); 						// [0%; 100%]     
 	data.pressure = random(1000, 1051); 					// [1000; 1050] (unit : mbar)
 	data.luminosity = random(100, 10000); 					// [100; 10000] (unit : lux)
+	return data;
 }
 
 
