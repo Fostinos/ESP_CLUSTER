@@ -21,7 +21,7 @@
 
 // Set your Board ID (ESP #1 = BOARD_ID_1, ESP #2 = BOARD_ID_2, etc)
 //TODO
-#define     BOARD_ID               ESP_BOARD_1
+#define     BOARD_ID               ESP_BOARD_ID
 
 
 // Set ADC Mode 
@@ -97,7 +97,7 @@ void setup() {
 			Serial.println("Succeed");
 
 			// Waiting loop
-			Serial.print("Synchronization....... ");
+			Serial.print("Synchronization.......");
 			while(sync != SYNC_ACK)
 			{
 				Serial.print(".");
@@ -250,30 +250,13 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 			// Synchronize
 			sync = SYNC_ACK;
 			// Storing Sync Byte to RTC Memory
-			Serial.println("Storing Sync Byte");
+			Serial.println("\nStoring Sync Byte");
 			Serial.print("Writing....... ");
 			if(ESP.rtcUserMemoryWrite(INFO_SYNC_OFFSET , (uint32_t*)&sync, INFO_SYNC_SIZE)){
 				Serial.println("Succeed");
 			}else{
 				Serial.println("Failed");
 			}
-		}
-
-		// Calculate Offset of current ESP_Data in RTC Memory
-		uint8_t offset = BOARD_ID * sizeof(ESP_Data);
-
-		// Storing the new packet to RTC Memory
-		Serial.println("Storing Incomming ESP_Data");
-		Serial.print("Writing....... ");
-		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET + offset + sizeof(ESP_Data), (uint32_t*)incomingData, len)){
-			Serial.println("Succeed");
-			// TODO
-
-		}else{
-			Serial.println("Failed");
-			// TODO
-
-			return;
 		}
 
 		// Get current ESP_Data from sensors
@@ -288,38 +271,31 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		data.pressure = random(1000, 1051);		// [1000; 1050] (unit : mbar)
 		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
 
-		// Storing Current ESP_Data to RTC Memory
-		Serial.println("Storing Current ESP_Data");
-		Serial.print("Writing....... ");
-		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET + offset, (uint32_t*)&data, sizeof(data))){
-			Serial.println("Succeed");
-			// TODO
-
-		}else{
-			Serial.println("Failed");
-			// TODO
-
-			return;
-		}
+		// Calculate Offset of current ESP_Data in RTC Memory
+		uint8_t offset = BOARD_ID * sizeof(ESP_Data);
 
 		uint8_t allData[len + sizeof(ESP_Data)];
-		// Loading from RTC Memory
-		Serial.println("Loading All ESP_Data");
+
+		memcpy(&allData, &data, sizeof(ESP_Data));
+
+		memcpy(&allData[sizeof(ESP_Data)], incomingData, len);
+
+		// Storing Current ESP_Data to RTC Memory
+		Serial.println("\nStoring All ESP_Data");
 		Serial.print("Writing....... ");
-		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET + offset, (uint32_t*)&data, sizeof(allData))){
+		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&allData, sizeof(allData))){
 			Serial.println("Succeed");
 
 			// Send All ESP_Data
 			esp_now_send(addressESP_DataReceiver, allData, sizeof(allData));
-
-			// END
-			return;
 		}else{
 			Serial.println("Failed");
 			// TODO
 
 			return;
 		}
+
+		
 
 	}
 
@@ -380,7 +356,48 @@ void beginDataSending(uint8_t board_ID)
 }
 
 
+/**
+ * @fn          		- printAllESPData 
+ * 
+ * @brief			  	- This function prints all ESP_Data of RTC Memory
+ *
+ * @return				- none
+ * 
+ * @note          		- none
+ */
+void printAllESPData()
+{
+	uint8_t length = (ESP_TOTAL - BOARD_ID) * sizeof(ESP_Data);
 
+	// Storing Current ESP_Data to RTC Memory
+	uint8_t allData[length];
+	Serial.println("\nLoading All ESP_Data");
+	Serial.print("Reading....... ");
+	if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&allData, length)){
+		Serial.println("Succeed");
+		
+		// Print All ESP_Data
+		ESP_Data data;
+		Serial.println("\n\n*********** ESP_Data Informations **********\n");
+		for(uint8_t i=0; i < (ESP_TOTAL - BOARD_ID); i++)
+		{
+			memcpy(&data, &allData[i * sizeof(ESP_Data)], sizeof(ESP_Data));
+			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
+			Serial.println("ESP Battery     : " + String(data.battery) + "%");
+			Serial.println("ESP Temperature : " + String(data.temperature) + "°C");
+			Serial.println("ESP Humidity    : " + String(data.humidity) + "%");
+			Serial.println("ESP Pressure    : " + String(data.pressure) + "mbar");
+			Serial.println("ESP Luminosity  : " + String(data.luminosity) + "lux");
+			Serial.println();
+		}
+	}else{
+		Serial.println("Failed");
+		// TODO
+
+		return;
+	}
+
+}
 
 
 

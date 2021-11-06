@@ -45,7 +45,7 @@
  * Current ESP Board ID 
 */
 // TODO: To be changed to corresponding Board ID
-#define 		ESP_BOARD_ID			ESP_BOARD_INV
+#define 		ESP_BOARD_ID			ESP_BOARD_2
 
 /*
  * Generic Macros
@@ -99,10 +99,11 @@ typedef struct
 /*
  * ESP MAC Addresses Table 
 */
+// A4:CF:12:D9:93:AB
 const uint8_t broadcastAddresses[ESP_TOTAL][ESP_ADDR] = {{0x10, 0x52, 0x1C, 0x67, 0x71, 0xA0},	// ESP ID 0 Address (Main ESP)
-												 		{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},	// ESP ID 1 Address
-												 		{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},	// ESP ID 2 Address
-												 		{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},	// ESP ID 3 Address
+												 		{0x2C, 0xF4, 0x32, 0x19, 0x86, 0xF5},	// ESP ID 1 Address
+												 		{0x50, 0x02, 0x91, 0x68, 0x34, 0x57},	// ESP ID 2 Address
+												 		{0xA4, 0xCF, 0x12, 0xD9, 0x93, 0xAB},	// ESP ID 3 Address
 														};
 
 
@@ -153,5 +154,16 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len);
  * @note          		- none
  */
 void beginDataSending(uint8_t board_ID);
+
+/**
+ * @fn          		- printAllESPData 
+ * 
+ * @brief			  	- This function prints all ESP_Data of RTC Memory
+ *
+ * @return				- none
+ * 
+ * @note          		- none
+ */
+void printAllESPData();
 
 #endif /* __MAIN_H */
