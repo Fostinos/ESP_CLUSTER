@@ -63,7 +63,7 @@ void setup() {
 
 	// Init ESP-NOW
 	if (esp_now_init() != 0) {
-		Serial.println("Error initializing ESP-NOW");
+		Serial.println("\nError initializing ESP-NOW");
 		return;
 	} 
 	// Set ESP-NOW role
@@ -91,7 +91,7 @@ void setup() {
 
 
 		// Loading from RTC Memory
-		Serial.println("Loading Sync Byte");
+		Serial.println("\nLoading Sync Byte");
 		Serial.print("Reading....... ");
 		if(ESP.rtcUserMemoryRead(INFO_SYNC_OFFSET , (uint32_t*)&sync, INFO_SYNC_SIZE)){
 			Serial.println("Succeed");
@@ -189,7 +189,7 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 				// Command_Type = Deep Sleep Time Configuration
 				
 				// Storing Deep Sleep Time to RTC Memory
-				Serial.println("Deep Sleep Time Configuration");
+				Serial.println("\nDeep Sleep Time Configuration");
 				Serial.print("Writing....... ");
 				if(ESP.rtcUserMemoryWrite(INFO_SLEEP_OFFSET, &cmd.time, INFO_SLEEP_SIZE)){
 					Serial.println("Succeed");
@@ -207,7 +207,7 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 				// Command_Type = Activity Time Configuration 
 
 				// Storing Activity Time to RTC Memory
-				Serial.println("Activity Time Configuration");
+				Serial.println("\nActivity Time Configuration");
 				Serial.print("Writing....... ");
 				if(ESP.rtcUserMemoryWrite(INFO_ACTIVITY_OFFSET, &cmd.time, INFO_ACTIVITY_SIZE)){
 					Serial.println("Succeed");
@@ -271,13 +271,14 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		data.pressure = random(1000, 1051);		// [1000; 1050] (unit : mbar)
 		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
 
-			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
-			Serial.println("ESP Battery     : " + String(data.battery) + " %");
-			Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
-			Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
-			Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
-			Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
-			Serial.println();
+		Serial.println("\n******* Current ESP_Data *******\n");
+		Serial.println("ESP BOARD ID    : " + String(data.board_ID));
+		Serial.println("ESP Battery     : " + String(data.battery) + " %");
+		Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
+		Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
+		Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
+		Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
+		Serial.println();
 
 		// Calculate Offset of current ESP_Data in RTC Memory
 		uint8_t allData[len + sizeof(ESP_Data)];
@@ -342,7 +343,7 @@ void beginDataSending(uint8_t board_ID)
 
 		
 		// Storing Current ESP_Data to RTC Memory
-		Serial.println("Storing Current ESP_Data");
+		Serial.println("\nStoring Current ESP_Data");
 		Serial.print("Writing....... ");
 		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET + offset, (uint32_t*)&data, sizeof(data))){
 			Serial.println("Succeed");
