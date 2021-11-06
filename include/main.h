@@ -64,6 +64,11 @@
 #define 		CMD_SLEEP				((uint8_t)0)		// Command Type for configuring Sleep Mode Time
 #define 		CMD_ACTIVITY			((uint8_t)1)		// Command Type for configuring Activity Mode Time
 
+
+#define 		SLEEP_TIME				30U					// Sleep Mode Default Time
+#define 		ACTIVITY_TIME			5U					// Activity Mode Default Time
+
+
 /*
  * Sync Types
  * @COMMAND_TYPES
@@ -99,12 +104,11 @@ typedef struct
 /*
  * ESP MAC Addresses Table 
 */
-// A4:CF:12:D9:93:AB
 const uint8_t broadcastAddresses[ESP_TOTAL][ESP_ADDR] = {   
-	{0x10, 0x52, 0x1C, 0x67, 0x71, 0xA0},				// ESP ID 0 Address (Main ESP)
-	{0x2C, 0xF4, 0x32, 0x19, 0x86, 0xF5},				// ESP ID 1 Address
-	{0x50, 0x02, 0x91, 0x68, 0x34, 0x57},				// ESP ID 2 Address
-	{0xA4, 0xCF, 0x12, 0xD9, 0x93, 0xAB},				// ESP ID 3 Address
+	{0x10, 0x52, 0x1C, 0x67, 0x71, 0xA0},		// ESP ID 0 MAC Address (Main ESP)
+	{0x2C, 0xF4, 0x32, 0x19, 0x86, 0xF5},		// ESP ID 1 MAC Address
+	{0x50, 0x02, 0x91, 0x68, 0x34, 0x57},		// ESP ID 2 MAC Address
+	{0xA4, 0xCF, 0x12, 0xD9, 0x93, 0xAB},		// ESP ID 3 MAC Address
 	};
 
 

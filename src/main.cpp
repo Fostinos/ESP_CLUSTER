@@ -29,13 +29,14 @@ ADC_MODE(ADC_VCC);
 
 
 // Not to be modified : ESP_Data RECEIVER MAC ADDRESS
-uint8_t addressESP_DataReceiver[ESP_ADDR] = { broadcastAddresses[BOARD_ID - 1][0],
-                                              broadcastAddresses[BOARD_ID - 1][1],
-                                              broadcastAddresses[BOARD_ID - 1][2],
-                                              broadcastAddresses[BOARD_ID - 1][3],
-                                              broadcastAddresses[BOARD_ID - 1][4],
-                                              broadcastAddresses[BOARD_ID - 1][5]
-                                            };
+uint8_t addressESP_DataReceiver[ESP_ADDR] = {
+	broadcastAddresses[BOARD_ID - 1][0],
+	broadcastAddresses[BOARD_ID - 1][1],
+	broadcastAddresses[BOARD_ID - 1][2],
+	broadcastAddresses[BOARD_ID - 1][3],
+	broadcastAddresses[BOARD_ID - 1][4],
+	broadcastAddresses[BOARD_ID - 1][5]
+};
 
 
 // ESP variables to be sent (To be stored in RTC Memory before sleeping)
@@ -78,7 +79,7 @@ void setup() {
 	if(BOARD_ID != (ESP_TOTAL - 1))
 	{
 		// Not to be modified : ESP_Command RECEIVER MAC ADDRESS
-		uint8_t addressESP_CommandReceiver[ESP_ADDR] = {  
+		uint8_t addressESP_CommandReceiver[ESP_ADDR] = {
 			broadcastAddresses[BOARD_ID + 1][0],
 			broadcastAddresses[BOARD_ID + 1][1],
 			broadcastAddresses[BOARD_ID + 1][2],
@@ -226,7 +227,7 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 			if(BOARD_ID != (ESP_TOTAL - 1))
 			{
 				// Not to be modified : ESP_Command RECEIVER MAC ADDRESS
-				uint8_t addressESP_CommandReceiver[ESP_ADDR] = {  
+				uint8_t addressESP_CommandReceiver[ESP_ADDR] = {
 					broadcastAddresses[BOARD_ID + 1][0],
 					broadcastAddresses[BOARD_ID + 1][1],
 					broadcastAddresses[BOARD_ID + 1][2],
@@ -264,13 +265,13 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		// Get current ESP_Data from sensors
 		ESP_Data data;
 		data.board_ID = BOARD_ID;
-		uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
+		uint16_t vcc_value = ESP.getVcc(); 			// Get Vcc value (Depends on ADC_RESOLUTION)
 		float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
-		data.battery = getBatteryPercentage(vcc);   // Get Percentage
-		data.temperature = random(0, 101);		// [0; 100]     (unit : °C)
-		data.humidity = random(0, 101);			// [0%; 100%]     
-		data.pressure = random(1000, 1051);		// [1000; 1050] (unit : mbar)
-		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
+		data.battery = getBatteryPercentage(vcc); 	// Get Percentage
+		data.temperature = random(0, 101); 			// [0; 100]     (unit : °C)
+		data.humidity = random(0, 101); 			// [0%; 100%]     
+		data.pressure = random(1000, 1051); 		// [1000; 1050] (unit : mbar)
+		data.luminosity = random(100, 10000); 		// [100; 10000] (unit : lux)
 
 		Serial.println("\n******* Current ESP_Data *******\n");
 		printESPData(data);
@@ -441,9 +442,8 @@ ESP_Data getESPData(void)
 	ESP_Data data;
 	data.board_ID = BOARD_ID;
 	uint16_t vcc_value = ESP.getVcc(); 						// Get Vcc value (Depends on ADC_RESOLUTION)
-	float vcc = vcc_value / ADC_RESOLUTION;					// Vcc Voltage
+	float vcc = 3.3 * vcc_value / ADC_RESOLUTION;					// Vcc Voltage
 	data.battery = getBatteryPercentage(vcc);				// Get Percentage
-	data.battery = getBatteryPercentage(VCC_VOLTAGE_MAX);	// 100%
 	data.temperature = random(0, 101); 						// [0; 100]     (unit : °C)
 	data.humidity = random(0, 101); 						// [0%; 100%]     
 	data.pressure = random(1000, 1051); 					// [1000; 1050] (unit : mbar)
