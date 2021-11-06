@@ -29,13 +29,13 @@ ADC_MODE(ADC_VCC);
 
 
 // Not to be modified : ESP_Data RECEIVER MAC ADDRESS
-uint8_t addressESP_DataReceiver[ESP_ADDR] = {   broadcastAddresses[BOARD_ID - 1][0],
-												broadcastAddresses[BOARD_ID - 1][1],
-												broadcastAddresses[BOARD_ID - 1][2],
-												broadcastAddresses[BOARD_ID - 1][3],
-												broadcastAddresses[BOARD_ID - 1][4],
-												broadcastAddresses[BOARD_ID - 1][5]
-											};
+uint8_t addressESP_DataReceiver[ESP_ADDR] = { broadcastAddresses[BOARD_ID - 1][0],
+                                              broadcastAddresses[BOARD_ID - 1][1],
+                                              broadcastAddresses[BOARD_ID - 1][2],
+                                              broadcastAddresses[BOARD_ID - 1][3],
+                                              broadcastAddresses[BOARD_ID - 1][4],
+                                              broadcastAddresses[BOARD_ID - 1][5]
+                                            };
 
 
 // ESP variables to be sent (To be stored in RTC Memory before sleeping)
@@ -78,23 +78,23 @@ void setup() {
 	if(BOARD_ID != (ESP_TOTAL - 1))
 	{
 		// Not to be modified : ESP_Command RECEIVER MAC ADDRESS
-		uint8_t addressESP_CommandReceiver[ESP_ADDR] = {  	broadcastAddresses[BOARD_ID + 1][0],
-															broadcastAddresses[BOARD_ID + 1][1],
-															broadcastAddresses[BOARD_ID + 1][2],
-															broadcastAddresses[BOARD_ID + 1][3],
-															broadcastAddresses[BOARD_ID + 1][4],
-															broadcastAddresses[BOARD_ID + 1][5]
-														};
+		uint8_t addressESP_CommandReceiver[ESP_ADDR] = {  broadcastAddresses[BOARD_ID + 1][0],
+                                                      broadcastAddresses[BOARD_ID + 1][1],
+                                                      broadcastAddresses[BOARD_ID + 1][2],
+                                                      broadcastAddresses[BOARD_ID + 1][3],
+                                                      broadcastAddresses[BOARD_ID + 1][4],
+                                                      broadcastAddresses[BOARD_ID + 1][5]
+                                                    };
 		esp_now_add_peer(addressESP_CommandReceiver, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
-
-		// WAIT For First Incomming Data
-
 
 		// Loading from RTC Memory
 		Serial.println("\nLoading Sync Byte");
 		Serial.print("Reading....... ");
-		if(ESP.rtcUserMemoryRead(INFO_SYNC_OFFSET , (uint32_t*)&sync, INFO_SYNC_SIZE)){
+		if(ESP.rtcUserMemoryRead(INFO_SYNC_OFFSET , (uint32_t*)&sync, INFO_SYNC_SIZE))
+    {
 			Serial.println("Succeed");
+      
+		  // WAIT For First Incomming Data
 
 			// Waiting loop
 			Serial.print("Synchronization.......");
@@ -105,14 +105,15 @@ void setup() {
 			}
 			Serial.println("\nSynchronized");
 
-		}else{
+		}else
+    {
 			Serial.println("Failed");
 			// TODO
 		}
 
-	}else  
+	}else  // BOARD_ID == (ESP_TOTAL - 1)
 	{
-		// That is the last Board (begin ESP_NOW communication)
+		// That is the last Board (this board begins ESP_NOW communication)
 		beginDataSending(BOARD_ID);
 	}
 	
@@ -123,18 +124,18 @@ void loop() {
 }
 
 
-// IMPLEMENTATION OF CALLBACK FUNCTIONS
+// IMPLEMENTATION OF MAIN.H FUNCTION PROTOTYPES
 
 /**
  * @fn            		- OnDataSent 
  * 
- * @brief			  	- Callback Function when data is sent
+ * @brief			  	    - Callback Function when data is sent
  *
- * @param[in]			- Receiver MAC Address
+ * @param[in]		    	- Receiver MAC Address
  * 
- * @param[in]			- Sending Status
+ * @param[in]			    - Sending Status
  *
- * @return				- none
+ * @return			    	- none
  * 
  * @note          		- Callback Function 
  */
@@ -158,17 +159,17 @@ void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
 /**
  * @fn          		- OnDataRecv 
  * 
- * @brief			  	- Callback Function when data is received
+ * @brief			  	  - Callback Function when data is received
  *
- * @param[in]			- Sender MAC Address
+ * @param[in]		  	- Sender MAC Address
  * 
- * @param[in]			- Pointer to Incoming Data
+ * @param[in]			  - Pointer to Incoming Data
  * 
- * @param[in]			- Incoming Data Length
+ * @param[in]			  - Incoming Data Length
  *
- * @return				- none
+ * @return			  	- none
  * 
- * @note          		- Callback Function 
+ * @note          	- Callback Function 
  */
 void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 
@@ -225,14 +226,14 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 			if(BOARD_ID != (ESP_TOTAL - 1))
 			{
 				// Not to be modified : ESP_Command RECEIVER MAC ADDRESS
-				uint8_t addressESP_CommandReceiver[ESP_ADDR] = {  	broadcastAddresses[BOARD_ID + 1][0],
-																	broadcastAddresses[BOARD_ID + 1][1],
-																	broadcastAddresses[BOARD_ID + 1][2],
-																	broadcastAddresses[BOARD_ID + 1][3],
-																	broadcastAddresses[BOARD_ID + 1][4],
-																	broadcastAddresses[BOARD_ID + 1][5]
-																};
-				
+				uint8_t addressESP_CommandReceiver[ESP_ADDR] = {  broadcastAddresses[BOARD_ID + 1][0],
+                                                          broadcastAddresses[BOARD_ID + 1][1],
+                                                          broadcastAddresses[BOARD_ID + 1][2],
+                                                          broadcastAddresses[BOARD_ID + 1][3],
+                                                          broadcastAddresses[BOARD_ID + 1][4],
+                                                          broadcastAddresses[BOARD_ID + 1][5]
+                                                        };
+                                
 				esp_now_send(addressESP_CommandReceiver, (uint8_t *)&cmd, sizeof(cmd));
 			}
 
@@ -262,10 +263,9 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		// Get current ESP_Data from sensors
 		ESP_Data data;
 		data.board_ID = BOARD_ID;
-		// uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
-		// float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
-		// data.battery = getBatteryPercentage(vcc);   // Get Percentage
-		data.battery = getBatteryPercentage(VCC_VOLTAGE_MAX); // 100%
+		uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
+		float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
+		data.battery = getBatteryPercentage(vcc);   // Get Percentage
 		data.temperature = random(0, 101);		// [0; 100]     (unit : °C)
 		data.humidity = random(0, 101);			// [0%; 100%]     
 		data.pressure = random(1000, 1051);		// [1000; 1050] (unit : mbar)
@@ -287,9 +287,12 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&allData, sizeof(allData))){
 			Serial.println("Succeed");
 
-			// Send All ESP_Data
-			//esp_now_send(addressESP_DataReceiver, allData, sizeof(allData));
+			// Print All ESP_Data
 			printAllESPData();
+
+			// Send All ESP_Data
+			esp_now_send(addressESP_DataReceiver, allData, sizeof(allData));
+
 		}else{
 			Serial.println("Failed");
 			// TODO
@@ -309,13 +312,13 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 /**
  * @fn          		- beginDataSending 
  * 
- * @brief			  	- This function sends the first ESP_Data
+ * @brief			  	  - This function sends the first ESP_Data
  *
- * @param[in]			- ESP Board ID (corresponding to Last Board ID)
+ * @param[in]			  - ESP Board ID (corresponding to Last Board ID)
  *
- * @return				- none
+ * @return				  - none
  * 
- * @note          		- none
+ * @note          	- none
  */
 void beginDataSending(uint8_t board_ID)
 {
@@ -326,9 +329,9 @@ void beginDataSending(uint8_t board_ID)
 		// Get current ESP_Data from sensors
 		ESP_Data data;
 		data.board_ID = BOARD_ID;
-		// uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
-		// float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
-		// data.battery = getBatteryPercentage(vcc);   // Get Percentage
+		uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
+		float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
+		data.battery = getBatteryPercentage(vcc);   // Get Percentage
 		data.battery = getBatteryPercentage(VCC_VOLTAGE_MAX); // 100%
 		data.temperature = random(0, 101);		// [0; 100]     (unit : °C)
 		data.humidity = random(0, 101);			// [0%; 100%]     
@@ -364,11 +367,11 @@ void beginDataSending(uint8_t board_ID)
 /**
  * @fn          		- printAllESPData 
  * 
- * @brief			  	- This function prints all ESP_Data of RTC Memory
+ * @brief			  	  - This function prints all ESP_Data of RTC Memory
  *
- * @return				- none
+ * @return				  - none
  * 
- * @note          		- none
+ * @note          	- none
  */
 void printAllESPData()
 {
@@ -400,15 +403,15 @@ void printAllESPData()
 
 
 /**
- * @fn          		- printESPData 
+ * @fn              - printESPData 
  * 
- * @brief			  	- This function prints ESP_Data on Serial Monitor
+ * @brief			  	  - This function prints ESP_Data on Serial Monitor
  *
- * @param[in]			- ESP_Data to be printed
+ * @param[in]			  - ESP_Data to be printed
  * 
- * @return				- none
+ * @return				  - none
  * 
- * @note          		- none
+ * @note          	- none
  */
 void printESPData(ESP_Data data)
 {
@@ -423,7 +426,28 @@ void printESPData(ESP_Data data)
 }
 
 
-
+/**
+ * @fn              - getESPData 
+ * 
+ * @brief           - This function gets ESP_Data of the current ESP Board
+ * 
+ * @return          - Currrent ESP_Data
+ * 
+ * @note            - none
+ */
+ESP_Data getESPData(void)
+{
+	ESP_Data data;
+	data.board_ID = BOARD_ID;
+	uint16_t vcc_value = ESP.getVcc();                    // Get Vcc value (Depends on ADC_RESOLUTION)
+	float vcc = vcc_value / ADC_RESOLUTION;		            // Vcc Voltage
+	data.battery = getBatteryPercentage(vcc);             // Get Percentage
+	data.battery = getBatteryPercentage(VCC_VOLTAGE_MAX); // 100%
+	data.temperature = random(0, 101);		                // [0; 100]     (unit : °C)
+	data.humidity = random(0, 101);                       // [0%; 100%]     
+	data.pressure = random(1000, 1051);		                // [1000; 1050] (unit : mbar)
+	data.luminosity = random(100, 10000);	                // [100; 10000] (unit : lux)
+}
 
 
 

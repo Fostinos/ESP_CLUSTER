@@ -47,15 +47,15 @@
 
 
 /*************************************************************************
- * @fn					- getBatteryPercentage
+ * @fn					  - getBatteryPercentage
  *
- * @brief				- This function calculates the percentage of the battery 
+ * @brief				  - This function calculates the percentage of the battery 
  *
  * @param[in]			- Value of Vcc Voltage
  *
  * @return				- Percentage of Battery
  *
- * @note				- none
+ * @note				  - none
  *
  */
 uint8_t getBatteryPercentage(float vcc);

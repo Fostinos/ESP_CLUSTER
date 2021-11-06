@@ -14,30 +14,30 @@
 
 
 /*************************************************************************
- * @fn					- getBatteryPercentage
+ * @fn				  	- getBatteryPercentage
  *
- * @brief				- This function calculates the percentage of the battery 
+ * @brief			  	- This function calculates the percentage of the battery 
  *
  * @param[in]			- Value of Vcc Voltage
  * 
  * @return				- Percentage of Battery
  *
- * @note				- none
+ * @note			  	- none
  *
  */
 uint8_t getBatteryPercentage(float vcc)
 {
     if(vcc >= VCC_VOLTAGE_MAX)
     {
-        return 100U;
+      return 100U;
     }else if (vcc <= VCC_VOLTAGE_MIN)
     {
-        return 0U;
+      return 0U;
     }else   // VCC_VOLTAGE_MIN < vcc < VCC_VOLTAGE_MAX
     {
-        float percentage = 0.0;
-        percentage = 100 * (vcc - VCC_VOLTAGE_MIN)/(VCC_VOLTAGE_MAX - VCC_VOLTAGE_MIN);
-        return uint8_t(percentage);
+      float percentage = 0.0;
+      percentage = 100 * (vcc - VCC_VOLTAGE_MIN)/(VCC_VOLTAGE_MAX - VCC_VOLTAGE_MIN);
+      return uint8_t(percentage);
     }
 }
  
