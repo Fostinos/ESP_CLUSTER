@@ -272,13 +272,7 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
 
 		Serial.println("\n******* Current ESP_Data *******\n");
-		Serial.println("ESP BOARD ID    : " + String(data.board_ID));
-		Serial.println("ESP Battery     : " + String(data.battery) + " %");
-		Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
-		Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
-		Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
-		Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
-		Serial.println();
+		printESPData(data);
 
 		// Calculate Offset of current ESP_Data in RTC Memory
 		uint8_t allData[len + sizeof(ESP_Data)];
@@ -349,13 +343,7 @@ void beginDataSending(uint8_t board_ID)
 			Serial.println("Succeed");
 
 			// Display First ESP_Data
-			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
-			Serial.println("ESP Battery     : " + String(data.battery) + " %");
-			Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
-			Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
-			Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
-			Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
-			Serial.println();
+			printESPData(data);
 
 			// Send ESP_Data
 			esp_now_send(addressESP_DataReceiver, (uint8_t*)&data, sizeof(data));
@@ -399,13 +387,7 @@ void printAllESPData()
 		for(uint8_t i=0; i < (ESP_TOTAL - BOARD_ID); i++)
 		{
 			memcpy(&data, &allData[i * sizeof(ESP_Data)], sizeof(ESP_Data));
-			Serial.println("ESP BOARD ID    : " + String(data.board_ID));
-			Serial.println("ESP Battery     : " + String(data.battery) + " %");
-			Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
-			Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
-			Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
-			Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
-			Serial.println();
+			printESPData(data);
 		}
 	}else{
 		Serial.println("Failed");
@@ -414,6 +396,30 @@ void printAllESPData()
 		return;
 	}
 
+}
+
+
+/**
+ * @fn          		- printESPData 
+ * 
+ * @brief			  	- This function prints ESP_Data on Serial Monitor
+ *
+ * @param[in]			- ESP_Data to be printed
+ * 
+ * @return				- none
+ * 
+ * @note          		- none
+ */
+void printESPData(ESP_Data data)
+{
+	Serial.println();
+	Serial.println("ESP BOARD ID    : " + String(data.board_ID));
+	Serial.println("ESP Battery     : " + String(data.battery) + " %");
+	Serial.println("ESP Temperature : " + String(data.temperature) + " °C");
+	Serial.println("ESP Humidity    : " + String(data.humidity) + " %");
+	Serial.println("ESP Pressure    : " + String(data.pressure) + " mbar");
+	Serial.println("ESP Luminosity  : " + String(data.luminosity) + " lux");
+	Serial.println();
 }
 
 

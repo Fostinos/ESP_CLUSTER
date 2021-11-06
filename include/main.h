@@ -166,4 +166,17 @@ void beginDataSending(uint8_t board_ID);
  */
 void printAllESPData();
 
+/**
+ * @fn          		- printESPData 
+ * 
+ * @brief			  	- This function prints ESP_Data on Serial Monitor
+ *
+ * @param[in]			- ESP_Data to be printed
+ * 
+ * @return				- none
+ * 
+ * @note          		- none
+ */
+void printESPData(ESP_Data data);
+
 #endif /* __MAIN_H */
