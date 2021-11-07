@@ -259,27 +259,21 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 		}
 
 		// Get current ESP_Data from sensors
-		ESP_Data data;
-		data.board_ID = BOARD_ID;
-		uint16_t vcc_value = ESP.getVcc(); 			// Get Vcc value (Depends on ADC_RESOLUTION)
-		float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
-		data.battery = getBatteryPercentage(vcc); 	// Get Percentage
-		data.temperature = random(0, 101); 			// [0; 100]     (unit : °C)
-		data.humidity = random(0, 101); 			// [0%; 100%]     
-		data.pressure = random(1000, 1051); 		// [1000; 1050] (unit : mbar)
-		data.luminosity = random(100, 10000); 		// [100; 10000] (unit : lux)
+		ESP_Data data = getESPData();
 
 		Serial.println("\n******* Current ESP_Data *******\n");
 		printESPData(data);
 
-		// Calculate Offset of current ESP_Data in RTC Memory
+		// All ESP_Data Array (its length = Current ESP_Data length + IncomingData length)
 		uint8_t allData[len + sizeof(ESP_Data)];
 
+		// Copy Current ESP_Data to All ESP_Data Array
 		memcpy(&allData, &data, sizeof(ESP_Data));
 
+		// Copy IncomingData to All ESP_Data Array
 		memcpy(&allData[sizeof(ESP_Data)], incomingData, len);
 
-		// Storing Current ESP_Data to RTC Memory
+		// Storing Current All ESP_Data to RTC Memory
 		Serial.println("\nStoring All ESP_Data");
 		Serial.print("Writing....... ");
 		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&allData, sizeof(allData))){
@@ -322,25 +316,13 @@ void beginDataSending(uint8_t board_ID)
 {
 	if(board_ID == (ESP_TOTAL - 1))
 	{
-		uint8_t offset = BOARD_ID * sizeof(ESP_Data);
-
 		// Get current ESP_Data from sensors
-		ESP_Data data;
-		data.board_ID = BOARD_ID;
-		uint16_t vcc_value = ESP.getVcc();			// Get Vcc value (Depends on ADC_RESOLUTION)
-		float vcc = vcc_value / ADC_RESOLUTION;		// Vcc Voltage
-		data.battery = getBatteryPercentage(vcc);   // Get Percentage
-		data.battery = getBatteryPercentage(VCC_VOLTAGE_MAX); // 100%
-		data.temperature = random(0, 101);		// [0; 100]     (unit : °C)
-		data.humidity = random(0, 101);			// [0%; 100%]     
-		data.pressure = random(1000, 1051);		// [1000; 1050] (unit : mbar)
-		data.luminosity = random(100, 10000);	// [100; 10000] (unit : lux)
-
+		ESP_Data data = getESPData();
 		
 		// Storing Current ESP_Data to RTC Memory
 		Serial.println("\nStoring Current ESP_Data");
 		Serial.print("Writing....... ");
-		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET + offset, (uint32_t*)&data, sizeof(data))){
+		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&data, sizeof(data))){
 			Serial.println("Succeed");
 
 			// Display First ESP_Data
@@ -438,7 +420,7 @@ ESP_Data getESPData(void)
 	ESP_Data data;
 	data.board_ID = BOARD_ID;
 	uint16_t vcc_value = ESP.getVcc(); 						// Get Vcc value (Depends on ADC_RESOLUTION)
-	float vcc = 3.3 * vcc_value / ADC_RESOLUTION;					// Vcc Voltage
+	float vcc = 3.3 * vcc_value / ADC_RESOLUTION;			// Vcc Voltage
 	data.battery = getBatteryPercentage(vcc);				// Get Percentage
 	data.temperature = random(0, 101); 						// [0; 100]     (unit : °C)
 	data.humidity = random(0, 101); 						// [0%; 100%]     
