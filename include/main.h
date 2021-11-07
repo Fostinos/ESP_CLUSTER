@@ -108,7 +108,7 @@ const uint8_t broadcastAddresses[ESP_TOTAL][ESP_ADDR] = {
 	};
 
 
-// CALLBACK PROTOTYPES IMPLEMENTED IN MAIN.CPP
+// PROTOTYPES (IMPLEMENTED IN MAIN.CPP)
 
 /**
  * @fn					- OnDataSent 

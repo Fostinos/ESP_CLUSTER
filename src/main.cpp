@@ -411,7 +411,7 @@ void printESPData(ESP_Data data)
  * 
  * @brief				- This function gets ESP_Data of the current ESP Board
  * 
- * @retur				- Currrent ESP_Data
+ * @return				- Currrent ESP_Data
  * 
  * @note				- none
  */
