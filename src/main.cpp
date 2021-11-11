@@ -42,13 +42,18 @@ uint8_t sync;
 uint8_t count = 0;
 
 unsigned long lastTime = 0;
-unsigned long timerDelay = 10000;
+unsigned long currentTime = 0;
+unsigned long timerDelay = 3000;
 
 
 
 void setup() {
 	// Init Serial Monitor
 	Serial.begin(115200);
+
+	// LED Pin Mode
+	pinMode(LED_BUILTIN, OUTPUT);
+	digitalWrite(LED_BUILTIN, HIGH); // Turn LED off
 
 	// Set device as a Wi-Fi Station
 	WiFi.mode(WIFI_STA);
@@ -117,6 +122,12 @@ void setup() {
 }
  
 void loop() {
+	//currentTime = millis();
+	if(digitalRead(LED_BUILTIN) == LOW)  // if LED on
+	{
+		delay(timerDelay);
+		digitalWrite(LED_BUILTIN, HIGH); // Turn LED off
+	}
 
 }
 
@@ -242,6 +253,8 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 	}else
 	{
 		// Incoming Data is ESP_Data
+		
+		digitalWrite(LED_BUILTIN, LOW);  // Turn LED on
 
 		// Check Synchronization
 		if(sync != SYNC_ACK)
@@ -419,9 +432,9 @@ ESP_Data getESPData(void)
 {
 	ESP_Data data;
 	data.board_ID = BOARD_ID;
-	uint16_t vcc_value = ESP.getVcc(); 						// Get Vcc value (Depends on ADC_RESOLUTION)
-	float vcc = 3.3 * vcc_value / ADC_RESOLUTION;			// Vcc Voltage
-	data.battery = getBatteryPercentage(vcc);				// Get Percentage
+	uint16_t vcc_value = ESP.getVcc(); 						// Get Vcc value (in MilliVolts)
+	float vcc = vcc_value / VCC_DIVIDER;					// Vcc Voltage (in Volts)
+	data.battery = getBatteryPercentage(vcc);				// Get Percentage 
 	data.temperature = random(0, 101); 						// [0; 100]     (unit : °C)
 	data.humidity = random(0, 101); 						// [0%; 100%]     
 	data.pressure = random(1000, 1051); 					// [1000; 1050] (unit : mbar)
