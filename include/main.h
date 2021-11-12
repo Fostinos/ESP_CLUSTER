@@ -67,7 +67,7 @@
 
 /*
  * Sync Types
- * @COMMAND_TYPES
+ * 
 */
 #define 		SYNC_ACK				0xF5U				// Synchronization
 #define 		SYNC_NACK			 	0xA5U				// DeSynchronization
