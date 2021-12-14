@@ -44,7 +44,7 @@
  */
 #define ADC_RESOLUTION                        ESP8266_ADC_RESOLUTION  
 
-#define	VCC_DIVIDER                           1000.00          
+#define	VCC_DIVIDER                           1000.0F         
 
 
 

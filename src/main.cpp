@@ -23,6 +23,12 @@
 // Set ADC Mode 
 ADC_MODE(ADC_VCC);
 
+/* Define the WiFi credentials */
+#define WIFI_SSID  					"OPPO A9 2020"
+
+// Last board delay Before beginning ESP-NOW communication (in Milliseconds) 
+#define DELAY_BEGINNIG_COMM  		500
+
 
 // Not to be modified : ESP_Data RECEIVER MAC ADDRESS
 uint8_t addressESP_DataReceiver[ESP_ADDR] = {
@@ -35,48 +41,48 @@ uint8_t addressESP_DataReceiver[ESP_ADDR] = {
 };
 
 
-// ESP variables to be sent (To be stored in RTC Memory before sleeping)
+// Some global variables 
 
 // Synchronization
 uint8_t sync;
-uint8_t count = 0;
 
-unsigned long lastTime = 0;
+unsigned long wakeUpTime = 0;
 unsigned long currentTime = 0;
-unsigned long timerDelay = 3000;
-
-
+unsigned long sleepTime = 0;
+unsigned long activityTime = 0;
+unsigned long lastTime = 0;			// used only in toggleLED function
+unsigned long syncTime = 0;			// time elapsed in the re-synchronization loop (= 0 for last Board)
 
 void setup() {
+	// Save the time firstly
+	wakeUpTime = micros();
+	currentTime = wakeUpTime;
+	lastTime = currentTime;
+
+	// Init LED 
+	pinMode(LED_BUILTIN, OUTPUT);
+	digitalWrite(LED_BUILTIN, LOW); // Turn on LED
+
 	// Init Serial Monitor
 	Serial.begin(115200);
 
-	// LED Pin Mode
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, HIGH); // Turn LED off
-
-	// Set device as a Wi-Fi Station
-	WiFi.mode(WIFI_STA);
-	WiFi.disconnect();
-
-	// Deep Sleep
-	// Serial.println("\nWaking up...");
-
+	// Init Wi-Fi
+	initWiFi();
 
 	// Init ESP-NOW
-	if (esp_now_init() != 0) {
-		Serial.println("\nError initializing ESP-NOW");
-		return;
-	} 
-	// Set ESP-NOW role
-	esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+	initESP_NOW();
 
-	// Once ESPNow is successfully init, register CallBack functions
-	esp_now_register_send_cb(OnDataSent);
-	esp_now_register_recv_cb(OnDataRecv);
+	// Load system informations from RTC Memory
+	initSystemInfo();
+
+	Serial.println("Activity Time : " + String(activityTime));
+	Serial.println("Sleep Time : " + String(sleepTime));
 
 	// Register peers
-	esp_now_add_peer(addressESP_DataReceiver, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
+	uint32_t channel = getWiFiChannel(WIFI_SSID);
+	//uint32_t channel = 1
+	esp_now_add_peer(addressESP_DataReceiver, ESP_NOW_ROLE_COMBO, (u8)channel, NULL, 0);
+
 	if(BOARD_ID != (ESP_TOTAL - 1))
 	{
 		// Not to be modified : ESP_Command RECEIVER MAC ADDRESS
@@ -88,51 +94,198 @@ void setup() {
 			broadcastAddresses[BOARD_ID + 1][4],
 			broadcastAddresses[BOARD_ID + 1][5]
 		};
-		esp_now_add_peer(addressESP_CommandReceiver, ESP_NOW_ROLE_COMBO, 1, NULL, 0);
+		esp_now_add_peer(addressESP_CommandReceiver, ESP_NOW_ROLE_COMBO, (u8)channel, NULL, 0);
 
-		// Loading from RTC Memory
-		Serial.println("\nLoading Sync Byte");
-		Serial.print("Reading....... ");
-		if(ESP.rtcUserMemoryRead(INFO_SYNC_OFFSET , (uint32_t*)&sync, INFO_SYNC_SIZE))
+		// Waiting loop (data reception break this loop)
+		Serial.print("Synchronization.......");
+		syncTime = micros();
+		while(sync != SYNC_ACK)
 		{
-			Serial.println("Succeed");
-			// WAIT For First Incomming Data
-
-			// Waiting loop
-			Serial.print("Synchronization.......");
-			while(sync != SYNC_ACK)
-			{
-				Serial.print(".");
-				delay(500); // wait 0.5 seconds
-			}
-			Serial.println("\nSynchronized");
-
-		}else
-		{
-			Serial.println("Failed");
-			// TODO
-		}
+			// Toggle LED every 200ms
+			toggleLED( micros() );
+			delay(10);		// wait 10ms
+		} 	
+		syncTime = micros() - syncTime;
+		Serial.println("Sync Time : " + String(syncTime));
+		Serial.println("\nSynchronized");
 
 	}else  // BOARD_ID == (ESP_TOTAL - 1)
 	{
 		// That is the last Board (this board begins ESP_NOW communication)
+		delay(DELAY_BEGINNIG_COMM); // wait 0.5 second before beginning ESP_NOW communication 
 		beginDataSending(BOARD_ID);
 	}
 	
 }
  
 void loop() {
-	//currentTime = millis();
-	if(digitalRead(LED_BUILTIN) == LOW)  // if LED on
+	currentTime = micros() - syncTime;				
+	if ( (currentTime - wakeUpTime) < activityTime )
 	{
-		delay(timerDelay);
-		digitalWrite(LED_BUILTIN, HIGH); // Turn LED off
-	}
+		// Activity time
+		if(sync != SYNC_ACK)
+		{
+			// Toggle LED every 200ms to indicate De-synchronization
+			toggleLED(currentTime);
 
+		}else
+		{
+			// Turn on LED to indicate Synchronization
+			// Activity Time Over
+			if(digitalRead(LED_BUILTIN) == HIGH)  // if LED off
+			{
+				digitalWrite(LED_BUILTIN, LOW); // Turn on LED 
+			}
+		}
+	}else
+	{
+		// Activity Time Over
+
+		if(digitalRead(LED_BUILTIN) == LOW)  // if LED on
+		{
+			digitalWrite(LED_BUILTIN, HIGH); // Turn off LED 
+		}
+		// Going to Sleep Mode
+		Serial.println("\nActivity Time Over");
+		if( sync == SYNC_ACK )
+		{
+			// Going to Sleep Mode with Synchronization
+			Serial.println("Going to Sleep Mode with Synchronization");
+			// ((currentTime - wakeUpTime) - activityTime) = additional time on activity time
+			ESP.deepSleep(sleepTime - ((currentTime - wakeUpTime) - activityTime));
+		}else
+		{
+			// Going to Sleep Mode with De-synchronization
+			Serial.println("Going to Sleep Mode with De-Synchronization");
+			// TODO
+			ESP.deepSleep(SLEEP_TIME * s_TO_uS_FACTOR);
+		}
+	}
 }
 
 
 // IMPLEMENTATION OF MAIN.H FUNCTION PROTOTYPES
+
+
+/**
+ * @fn 					- getWiFiChannel
+ * 
+ * @brief 				- This function scans WiFi network and return its channel
+ * 
+ * @param[in] 			- ssid 
+ * 
+ * @return 				- WiFi channel 
+ */
+int32_t getWiFiChannel(const char *ssid) 
+{
+	if (int32_t n = WiFi.scanNetworks()) 
+	{
+		for (uint8_t i=0; i<n; i++) 
+		{
+			if (!strcmp(ssid, WiFi.SSID(i).c_str())) 
+			{
+				return WiFi.channel(i);
+			}
+		}
+	}
+	return 0;
+}
+
+/**
+ * @fn 					- initWiFi
+ * 
+ * @brief 				- This function initializes WiFi network
+ * 
+ * @return 				- none 
+ */
+void initWiFi(void) 
+{
+	WiFi.mode(WIFI_STA);
+
+	int32_t channel = getWiFiChannel(WIFI_SSID);
+
+	wifi_promiscuous_enable(1);
+	wifi_set_channel((u8)channel);
+	wifi_promiscuous_enable(0);
+
+	WiFi.printDiag(Serial);
+}
+
+/**
+ * @fn 					- initESP_NOW
+ * 
+ * @brief 				- This function initializes ESP_NOW network
+ * 
+ * @return 				- none 
+ */
+void initESP_NOW(void) 
+{
+	if (esp_now_init() != 0) {
+		Serial.println("\nError initializing ESP-NOW");
+		return;
+	} 
+
+	// Set ESP-NOW role
+	esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+
+	// Once ESPNow is successfully init, register CallBack functions
+	esp_now_register_send_cb(OnDataSent);
+	esp_now_register_recv_cb(OnDataRecv);
+}
+
+/**
+ * @fn 					- initSystemInfo
+ * 
+ * @brief 				- This function loads system informations from RTC Memory
+ * 
+ * @return 				- none 
+ */
+void initSystemInfo(void) 
+{
+	Serial.println("\nLoading Sync Byte");
+	Serial.print("Reading....... ");
+	if(ESP.rtcUserMemoryRead(INFO_SYNC_OFFSET , (uint32_t*)&sync, INFO_SYNC_SIZE))
+	{
+		Serial.println("Succeed");
+
+	}else
+	{
+		Serial.println("Failed");
+	}
+
+	// Loading Times from RTC Memory
+	Serial.println("\nLoading Times");
+	Serial.print("Reading....... ");
+	if(ESP.rtcUserMemoryRead(INFO_SLEEP_OFFSET , (uint32_t*)&sleepTime, INFO_SLEEP_SIZE))
+	{
+		Serial.println("Succeed");
+		if(sleepTime <= 0 || sleepTime >= 3600) 
+		{
+			sleepTime = SLEEP_TIME * s_TO_uS_FACTOR;
+		}else // sleepTime is less than 1 hour
+		{
+			sleepTime = sleepTime * s_TO_uS_FACTOR;
+		}
+	}else
+	{
+		Serial.println("Failed");
+	}
+
+	if(ESP.rtcUserMemoryRead(INFO_ACTIVITY_OFFSET , (uint32_t*)&activityTime, INFO_ACTIVITY_SIZE))
+	{
+		Serial.println("Succeed");
+		if(activityTime <= 0 || activityTime >= 10)
+		{
+			activityTime = ACTIVITY_TIME * s_TO_uS_FACTOR;
+		}else // activityTime is less than 10 seconds
+		{
+			activityTime =  activityTime * s_TO_uS_FACTOR;
+		}
+	}else
+	{
+		Serial.println("Failed");
+	}
+}
 
 /**
  * @fn					- OnDataSent 
@@ -148,19 +301,33 @@ void loop() {
  * @note				- Callback Function 
  */
 void OnDataSent(uint8_t *mac_addr, uint8_t sendStatus) {
-  Serial.print("\r\nLast Packet Send Status: ");
-  if (sendStatus == 0){
-    Serial.println("Delivery success");
-
-	// TODO
-	
-  }
-  else{
-    Serial.println("Delivery fail");
-
-	//TODO
-
-  }
+	Serial.print("\r\nLast Packet Send Status: ");
+	if (sendStatus == 0){
+		Serial.println("Delivery success");
+		// Synchronization
+		// Storing Sync byte to RTC Memory
+		Serial.println("\nSync byte Configuration");
+		Serial.print("Writing....... ");
+		sync = SYNC_ACK;
+		if(ESP.rtcUserMemoryWrite(INFO_SYNC_OFFSET, (uint32_t*)&sync, INFO_SYNC_SIZE)){
+			Serial.println("Succeed");
+		}else{
+			Serial.println("Failed");
+		}
+	}
+	else{
+		Serial.println("Delivery fail");
+		// Desynchronization
+		// Storing De-Sync byte to RTC Memory
+		Serial.println("\nSync byte Configuration");
+		Serial.print("Writing....... ");
+		sync = SYNC_NACK;
+		if(ESP.rtcUserMemoryWrite(INFO_SYNC_OFFSET, (uint32_t*)&sync, INFO_SYNC_SIZE)){
+			Serial.println("Succeed");
+		}else{
+			Serial.println("Failed");
+		}
+	}
 }
 
 
@@ -253,8 +420,8 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
 	}else
 	{
 		// Incoming Data is ESP_Data
-		
-		digitalWrite(LED_BUILTIN, LOW);  // Turn LED on
+
+		digitalWrite(LED_BUILTIN, LOW);  // Turn on LED 
 
 		// Check Synchronization
 		if(sync != SYNC_ACK)
@@ -327,32 +494,30 @@ void OnDataRecv(uint8_t * mac_addr, uint8_t *incomingData, uint8_t len) {
  */
 void beginDataSending(uint8_t board_ID)
 {
-	if(board_ID == (ESP_TOTAL - 1))
+	// Get current ESP_Data from sensors
+	ESP_Data data = getESPData();
+	
+	// Storing Current ESP_Data to RTC Memory
+	Serial.println("\nStoring Current ESP_Data");
+	Serial.print("Writing....... ");
+	if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&data, sizeof(data)))
 	{
-		// Get current ESP_Data from sensors
-		ESP_Data data = getESPData();
-		
-		// Storing Current ESP_Data to RTC Memory
-		Serial.println("\nStoring Current ESP_Data");
-		Serial.print("Writing....... ");
-		if(ESP.rtcUserMemoryWrite(RTC_DATA_OFFSET, (uint32_t*)&data, sizeof(data))){
-			Serial.println("Succeed");
+		Serial.println("Succeed");
 
-			// Display First ESP_Data
-			printESPData(data);
+		// Display First ESP_Data
+		printESPData(data);
 
-			// Send ESP_Data
-			esp_now_send(addressESP_DataReceiver, (uint8_t*)&data, sizeof(data));
+		// Send ESP_Data
+		esp_now_send(addressESP_DataReceiver, (uint8_t*)&data, sizeof(data));
 
-			// END 
-			return;
-		}else{
-			Serial.println("Failed");
-			// TODO
+		// END 
+		return;
+	}else
+	{
+		Serial.println("Failed");
+		// TODO
 
-			return;
-		}
-
+		return;
 	}
 }
 
@@ -433,7 +598,7 @@ ESP_Data getESPData(void)
 	ESP_Data data;
 	data.board_ID = BOARD_ID;
 	uint16_t vcc_value = ESP.getVcc(); 						// Get Vcc value (in MilliVolts)
-	float vcc = vcc_value / VCC_DIVIDER;					// Vcc Voltage (in Volts)
+	float vcc = (float)vcc_value / VCC_DIVIDER;				// Vcc Voltage (in Volts)
 	data.battery = getBatteryPercentage(vcc);				// Get Percentage 
 	data.temperature = random(0, 101); 						// [0; 100]     (unit : °C)
 	data.humidity = random(0, 101); 						// [0%; 100%]     
@@ -442,7 +607,31 @@ ESP_Data getESPData(void)
 	return data;
 }
 
-
+/**
+ * @fn					- toggleLED 
+ * 
+ * @brief				- This function toogles LED every 200ms
+ * 
+ * @param[in] 			- Current time
+ * 
+ * @return				- none
+ * 
+ * @note				- none
+ */
+void toggleLED(unsigned long currentTime)
+{
+	if( (currentTime - lastTime) > (200 * ms_TO_uS_FACTOR) )
+	{
+		if(digitalRead(LED_BUILTIN) == LOW)  // if LED on
+		{
+			digitalWrite(LED_BUILTIN, HIGH); // Turn off LED
+		}else								 // else LED off
+		{
+			digitalWrite(LED_BUILTIN, LOW); // Turn on LED
+		}
+		lastTime = currentTime;
+	}
+}
 
 
 

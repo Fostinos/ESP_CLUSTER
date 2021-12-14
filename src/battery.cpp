@@ -37,7 +37,7 @@ uint8_t getBatteryPercentage(float vcc)
     {
       float percentage = 0.0;
       percentage = 100 * (vcc - VCC_VOLTAGE_MIN)/(VCC_VOLTAGE_MAX - VCC_VOLTAGE_MIN);
-      return uint8_t(percentage);
+      return (uint8_t)(percentage);
     }
 }
  
