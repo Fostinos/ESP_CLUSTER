@@ -45,7 +45,7 @@
  * Current ESP Board ID 
 */
 // TODO: To be changed to corresponding Board ID
-#define 		BOARD_ID				ESP_BOARD_3
+#define 		BOARD_ID				ESP_BOARD_1
 
 /*
  * Generic Macros
@@ -111,17 +111,6 @@ const uint8_t broadcastAddresses[ESP_TOTAL][ESP_ADDR] = {
 
 // PROTOTYPES (IMPLEMENTED IN MAIN.CPP)
 
-
-/**
- * @fn 					- getWiFiChannel
- * 
- * @brief 				- This function scans WiFi network and return its channel
- * 
- * @param[in] 			- ssid 
- * 
- * @return 				- WiFi channel 
- */
-int32_t getWiFiChannel(const char *ssid);
 
 /**
  * @fn 					- initWiFi

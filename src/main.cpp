@@ -23,9 +23,6 @@
 // Set ADC Mode 
 ADC_MODE(ADC_VCC);
 
-/* Define the WiFi credentials */
-#define WIFI_SSID  					"OPPO A9 2020"
-
 // Last board delay Before beginning ESP-NOW communication (in Milliseconds) 
 #define DELAY_BEGINNIG_COMM  		500
 
@@ -52,6 +49,7 @@ unsigned long sleepTime = 0;
 unsigned long activityTime = 0;
 unsigned long lastTime = 0;			// used only in toggleLED function
 unsigned long syncTime = 0;			// time elapsed in the re-synchronization loop (= 0 for last Board)
+uint8_t channel = 1;
 
 void setup() {
 	// Save the time firstly
@@ -79,9 +77,8 @@ void setup() {
 	Serial.println("Sleep Time : " + String(sleepTime));
 
 	// Register peers
-	uint32_t channel = getWiFiChannel(WIFI_SSID);
-	//uint32_t channel = 1
-	esp_now_add_peer(addressESP_DataReceiver, ESP_NOW_ROLE_COMBO, (u8)channel, NULL, 0);
+
+	esp_now_add_peer(addressESP_DataReceiver, ESP_NOW_ROLE_COMBO, channel, NULL, 0);
 
 	if(BOARD_ID != (ESP_TOTAL - 1))
 	{
@@ -94,7 +91,7 @@ void setup() {
 			broadcastAddresses[BOARD_ID + 1][4],
 			broadcastAddresses[BOARD_ID + 1][5]
 		};
-		esp_now_add_peer(addressESP_CommandReceiver, ESP_NOW_ROLE_COMBO, (u8)channel, NULL, 0);
+		esp_now_add_peer(addressESP_CommandReceiver, ESP_NOW_ROLE_COMBO, channel, NULL, 0);
 
 		// Waiting loop (data reception break this loop)
 		Serial.print("Synchronization.......");
@@ -167,29 +164,6 @@ void loop() {
 // IMPLEMENTATION OF MAIN.H FUNCTION PROTOTYPES
 
 
-/**
- * @fn 					- getWiFiChannel
- * 
- * @brief 				- This function scans WiFi network and return its channel
- * 
- * @param[in] 			- ssid 
- * 
- * @return 				- WiFi channel 
- */
-int32_t getWiFiChannel(const char *ssid) 
-{
-	if (int32_t n = WiFi.scanNetworks()) 
-	{
-		for (uint8_t i=0; i<n; i++) 
-		{
-			if (!strcmp(ssid, WiFi.SSID(i).c_str())) 
-			{
-				return WiFi.channel(i);
-			}
-		}
-	}
-	return 0;
-}
 
 /**
  * @fn 					- initWiFi
@@ -202,10 +176,8 @@ void initWiFi(void)
 {
 	WiFi.mode(WIFI_STA);
 
-	int32_t channel = getWiFiChannel(WIFI_SSID);
-
 	wifi_promiscuous_enable(1);
-	wifi_set_channel((u8)channel);
+	wifi_set_channel(channel);
 	wifi_promiscuous_enable(0);
 
 	WiFi.printDiag(Serial);
@@ -632,12 +604,6 @@ void toggleLED(unsigned long currentTime)
 		lastTime = currentTime;
 	}
 }
-
-
-
-
-
-
 
 
 
